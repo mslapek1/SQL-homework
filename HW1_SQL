@@ -1,0 +1,51 @@
+-- tworze tabele
+create table dentists (
+	Location	varchar(52),
+	Period		integer,
+	Indicator	varchar(21),
+	First_Tooltip numeric
+);
+-- 4a
+select * from dentists d;
+-- 4b
+select period, first_tooltip from dentists d;
+-- 4c
+select period rok, first_tooltip wskaznik_dentystow from dentists d;
+--4d
+select * from dentists d2 
+	where upper(location) like 'B%'
+	or period = 2006;
+-- 4e
+select * from dentists d2 
+	where lower(location) like '%land';
+-- 4f
+select avg(first_tooltip) sredni_wsk, 
+	min(first_tooltip) wart_min_wsk, 
+	max(first_tooltip) wart_max_wsk
+from dentists d;
+-- 4g
+select avg(first_tooltip) sredni_wsk, 
+	min(first_tooltip) wart_min_wsk, 
+	max(first_tooltip) wart_max_wsk
+from dentists d
+where lower(location) = 'poland';
+-- 4h
+select * from dentists d 
+	where lower(location) = 'poland'
+	order by period;
+-- 4i
+select min(period) min_rok, 
+	max(period) max_rok
+from dentists d;
+-- 4j max rok to 2019, max wsk 7.14 w danym roku
+select max(first_tooltip) from dentists d 
+where period = 2019;
+
+select location from dentists d 
+where first_tooltip = 7.14 and period = 2019;
+-- 4k min rok to 1990, max wsk 9.02
+select max(first_tooltip) from dentists d 
+where period = 1990;
+
+select location from dentists d 
+where first_tooltip = 9.02 and period = 1990;
