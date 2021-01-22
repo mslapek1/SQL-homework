@@ -44,9 +44,21 @@ where period = 2019;
 -- 4j cd max wsk to 7.14 w danym roku
 select location from dentists d 
 where first_tooltip = 7.14 and period = 2019;
+-- 4j w jednym zapytaniu
+select location from dentists d 
+	where first_tooltip = 	
+		(select max(first_tooltip) from dentists d2 
+			where period = (select max(period) from dentists d3))
+	and period = (select max(period) from dentists d4);
 -- 4k min rok to 1990
 select max(first_tooltip) from dentists d 
 where period = 1990;
 -- 4k cd max wsk to 9.02 w danym roku
 select location from dentists d 
 where first_tooltip = 9.02 and period = 1990;
+-- 4k w jednym zapytaniu
+select location from dentists d 
+	where first_tooltip = 	
+		(select max(first_tooltip) from dentists d2 
+			where period = (select min(period) from dentists d3))
+	and period = (select min(period) from dentists d4);
