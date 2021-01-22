@@ -1,3 +1,4 @@
+
 -- tworze tabele
 create table dentists (
 	Location	varchar(52),
@@ -11,7 +12,7 @@ select * from dentists d;
 select period, first_tooltip from dentists d;
 -- 4c
 select period rok, first_tooltip wskaznik_dentystow from dentists d;
---4d
+-- 4d
 select * from dentists d2 
 	where upper(location) like 'B%'
 	or period = 2006;
@@ -37,15 +38,15 @@ select * from dentists d
 select min(period) min_rok, 
 	max(period) max_rok
 from dentists d;
--- 4j max rok to 2019, max wsk 7.14 w danym roku
+-- 4j max rok to 2019
 select max(first_tooltip) from dentists d 
 where period = 2019;
-
+-- 4j cd max wsk to 7.14 w danym roku
 select location from dentists d 
 where first_tooltip = 7.14 and period = 2019;
--- 4k min rok to 1990, max wsk 9.02
+-- 4k min rok to 1990
 select max(first_tooltip) from dentists d 
 where period = 1990;
-
+-- 4k cd max wsk to 9.02 w danym roku
 select location from dentists d 
 where first_tooltip = 9.02 and period = 1990;
