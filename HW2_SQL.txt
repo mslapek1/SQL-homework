@@ -1,0 +1,71 @@
+--zad1
+--Sprawdz jak wygladaja zapasy magazynowe poszczegolnych kategorii produktow (tabele
+--products, categories) - suma unitinstock
+select c."CategoryName", 
+	   sum(p."UnitsInStock") stan_magazynowy 
+from products p
+join categories c on p."CategoryID" = c."CategoryID"
+group by c."CategoryName";
+
+--zad2
+--Do wynikow tabeli orders dodaj numer zamowienia w miesiacu (partycjonowanie po
+--miesiacach) kolejnosc wedlug daty
+select *,
+	   row_number() over (partition by to_char("OrderDate",'YYYY-MM') order by "OrderDate") nr_zam_w_mcu
+from orders o; 
+--Dodaj analogiczne pole, ale w kolejnosci malejacej
+select *,
+	   row_number() over (partition by to_char("OrderDate",'YYYY-MM') order by "OrderDate" desc) nr_zam_w_mcu
+from orders o;
+--Wypisz date pierwszego i ostatniego zamowienia w poszczegolnych miesiacach
+select *,
+	   min("OrderDate") over (partition by to_char("OrderDate",'YYYY-MM')) min_data_zam_w_mcu,
+	   max("OrderDate") over (partition by to_char("OrderDate",'YYYY-MM')) max_data_zam_w_mcu
+from orders o;
+--Dodaj do wyników kwotę zamówienia
+select o."OrderID",
+	   o."OrderDate", 
+	   min("OrderDate") over (partition by to_char("OrderDate",'YYYY-MM')) min_data_zam_w_mcu,
+	   max("OrderDate") over (partition by to_char("OrderDate",'YYYY-MM')) max_data_zam_w_mcu,
+	   round(sum(od."UnitPrice"*od."Quantity"*(1-od."Discount"))::numeric,2) kwota_zam
+from orders o
+join order_details od on o."OrderID" = od."OrderID"
+group by o."OrderID"
+order by o."OrderID";
+--Podziel zbior za pomoca funkcji ntile na 5 podzbiorow wedlug kwoty zamowienia
+--Tworze widok dla wygody
+create view v_customer as
+select o."CustomerID",
+	   o."OrderID", 
+	   o."OrderDate", 
+	   round(sum(od."UnitPrice"*od."Quantity"*(1-od."Discount"))::numeric,2) as kwota_zamowienia
+from orders o
+join order_details od on o."OrderID" = od."OrderID"
+group by o."OrderID";
+--podzial na 5 podzbiorow po kwocie zamowienia
+select *,
+	   ntile(5) over (order by kwota_zamowienia) ntile_rank_5
+from v_customer vc; 
+--Wyznacz minimalna i maksymalna wartosc z wynikow poprzedniego punktu dla kazdego
+--klienta. (wyniki funkcji ntile)
+--tworze widok dla wygody
+create view v_customer_ntile as
+select *,
+	   ntile(5) over (order by kwota_zamowienia) ntile_rank_5
+from v_customer vc; 
+--wyznaczam min i max wartosc ntile dla kazdego klienta
+select *,
+	   min(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") min_ntile,
+	   max(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") max_ntile
+from v_customer_ntile vcn ;
+--Sprawdz, czy istnieja klienci premium (ktorzy zawsze wystepuja w kwnatylu 4 lub 5).
+--tworze widok dla wygody
+create view v_customer_min_max as
+select *,
+	   min(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") min_ntile,
+	   max(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") max_ntile
+from v_customer_ntile vcn ;
+--sprawdzam czy istnieja klienci premium
+select *
+from v_customer_min_max vcmm 
+where min_ntile in (4,5);
