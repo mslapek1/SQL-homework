@@ -53,11 +53,18 @@ create view v_customer_ntile as
 select *,
 	   ntile(5) over (order by kwota_zamowienia) ntile_rank_5
 from v_customer vc; 
---wyznaczam min i max wartosc ntile dla kazdego klienta
+--wyznaczam min i max wartosc ntile dla kazdego klienta, pierwsza wersja
 select *,
 	   min(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") min_ntile,
 	   max(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") max_ntile
 from v_customer_ntile vcn ;
+--alternatywna wersja
+select "CustomerID",
+		min(ntile_rank_5) min_ntile,
+		max(ntile_rank_5) max_ntile
+from v_customer_ntile vcn
+group by "CustomerID" 
+order by "CustomerID"; 
 --Sprawdz, czy istnieja klienci premium (ktorzy zawsze wystepuja w kwnatylu 4 lub 5).
 --tworze widok dla wygody
 create view v_customer_min_max as
@@ -65,7 +72,14 @@ select *,
 	   min(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") min_ntile,
 	   max(ntile_rank_5) over (partition by "CustomerID" order by "CustomerID") max_ntile
 from v_customer_ntile vcn ;
---sprawdzam czy istnieja klienci premium
+--sprawdzam czy istnieja klienci premium, pierwsza wersja
 select *
 from v_customer_min_max vcmm 
 where min_ntile in (4,5);
+--alteratywna wersja
+select "CustomerID",
+		min(ntile_rank_5) min_ntile,
+		max(ntile_rank_5) max_ntile
+from v_customer_ntile vcn
+group by "CustomerID" 
+having min(ntile_rank_5) in (4,5) ; 
